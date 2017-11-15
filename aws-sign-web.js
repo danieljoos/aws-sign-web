@@ -133,12 +133,12 @@
         ws.canonicalRequest = String(ws.request.method).toUpperCase() + '\n' +
                 // Canonical URI:
             ws.uri.path.split('/').map(function(seg) {
-                return encodeURIComponent(seg);
+                return uriEncode(seg);
             }).join('/') + '\n' +
                 // Canonical Query String:
             Object.keys(ws.uri.queryParams).sort().map(function (key) {
-                return encodeURIComponent(key) + '=' +
-                    encodeURIComponent(ws.uri.queryParams[key]);
+                return uriEncode(key) + '=' +
+                    uriEncode(ws.uri.queryParams[key]);
             }).join('&') + '\n' +
                 // Canonical Headers:
             ws.sortedHeaderKeys.map(function (key) {
@@ -246,6 +246,42 @@
                 return result;
             }, {});
         }
+    }
+
+    /**
+     * URI encode every byte. UriEncode() must enforce the following rules:
+     * URI encode every byte except the unreserved characters: 'A'-'Z', 'a'-'z', '0'-'9', '-', '.', '_', and '~'.
+     * The space character is a reserved character and must be encoded as "%20" (and not as "+").
+     * Each URI encoded byte is formed by a '%' and the two-digit hexadecimal value of the byte.
+     * Letters in the hexadecimal value must be uppercase, for example "%1A".
+     * Encode the forward slash character, '/', everywhere except in the object key name. For example, if the object key name is photos/Jan/sample.jpg, the forward slash in the key name is not encoded.
+     * Reference: http://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html
+     */
+    function uriEncode(input, encodeSlash) {
+        const result = [];
+        for (let i = 0; i < input.length; i++) {
+            const ch = input.charAt(i);
+            if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch === '_' || ch === '-' || ch === '~' || ch === '.') {
+                result.push(ch);
+            } else if (ch === '/') {
+                result.push(encodeSlash ? "%2F" : ch);
+            } else {
+                result.push(toHexUTF8(ch));
+            }
+        }
+        return result.join();
+    }
+
+    const utf8 = require('utf8');
+
+    function toHexUTF8(ch) {
+        const utf8Sequence = utf8.encode(ch);
+        const encodedChar = [];
+        for (let i = 0; i < utf8Sequence.length; i++) {
+            encodedChar.push("%");
+            encodedChar.push(utf8Sequence[i].charCodeAt(0).toString(16));
+        }
+        return encodedChar.join();
     }
 
     /**
