@@ -269,7 +269,7 @@
                 result.push(toHexUTF8(ch));
             }
         }
-        return result.join();
+        return result.join("");
     }
 
     const utf8 = require('utf8');
@@ -279,9 +279,9 @@
         const encodedChar = [];
         for (let i = 0; i < utf8Sequence.length; i++) {
             encodedChar.push("%");
-            encodedChar.push(utf8Sequence[i].charCodeAt(0).toString(16));
+            encodedChar.push(utf8Sequence[i].charCodeAt(0).toString(16).toUpperCase());
         }
-        return encodedChar.join();
+        return encodedChar.join("");
     }
 
     /**
