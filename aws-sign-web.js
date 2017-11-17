@@ -258,9 +258,9 @@
      * Reference: http://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html
      */
     function uriEncode(input, encodeSlash) {
-        const result = [];
-        for (let i = 0; i < input.length; i++) {
-            const ch = input.charAt(i);
+        var result = [];
+        for (var i = 0; i < input.length; i++) {
+            var ch = input.charAt(i);
             if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch === '_' || ch === '-' || ch === '~' || ch === '.') {
                 result.push(ch);
             } else if (ch === '/') {
@@ -277,7 +277,7 @@
     function toHexUTF8(ch) {
         const utf8Sequence = utf8.encode(ch);
         const encodedChar = [];
-        for (let i = 0; i < utf8Sequence.length; i++) {
+        for (var i = 0; i < utf8Sequence.length; i++) {
             encodedChar.push("%");
             encodedChar.push(utf8Sequence[i].charCodeAt(0).toString(16).toUpperCase());
         }
