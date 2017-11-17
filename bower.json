@@ -9,7 +9,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "cryptojslib": "~3.1.2"
+    "cryptojslib": "~3.1.2",
+    "utf8": "^2.1.2"
   },
   "homepage": "https://github.com/danieljoos/aws-sign-web#readme",
   "version": "1.2.1"
