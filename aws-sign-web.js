@@ -240,7 +240,7 @@
                 protocol: parser.protocol,
                 host: parser.host.replace(/^(.*):((80)|(443))$/, '$1'),
                 path: ((parser.pathname.charAt(0) !== '/') ? '/' : '') +
-                    decodeURIComponent(parser.pathname),
+                    decodeURI(parser.pathname),
                 queryParams: extractQueryParams(parser.search)
             };
         };
@@ -249,7 +249,7 @@
             return /^\??(.*)$/.exec(search)[1].split('&').reduce(function (result, arg) {
                 arg = /^(.+)=(.*)$/.exec(arg);
                 if (arg) {
-                    result[decodeURIComponent(arg[1])] = decodeURIComponent(arg[2]);
+                    result[decodeURI(arg[1])] = decodeURI(arg[2]);
                 }
                 return result;
             }, {});
