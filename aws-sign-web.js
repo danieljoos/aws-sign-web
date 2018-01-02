@@ -1,7 +1,7 @@
 //
 // AWS Signature v4 Implementation for Web Browsers
 //
-// Copyright (c) 2016 Daniel Joos
+// Copyright (c) 2016-2017 Daniel Joos
 //
 // Distributed under MIT license. (See file LICENSE)
 //
@@ -97,6 +97,13 @@
             'accept': self.config.defaultAcceptType,
             'x-amz-date': amzDate(ws.signDate)
         };
+        // Remove accept/content-type headers if no default was configured.
+        if (!self.config.defaultAcceptType) {
+            delete headers['accept'];
+        }
+        if (!self.config.defaultContentType) {
+            delete headers['content-type'];
+        }
         // Payload or not?
         ws.request.method = ws.request.method.toUpperCase();
         if (ws.request.body) {
@@ -232,7 +239,8 @@
             return {
                 protocol: parser.protocol,
                 host: parser.host.replace(/^(.*):((80)|(443))$/, '$1'),
-                path: ((parser.pathname.charAt(0) !== '/') ? '/' : '') + parser.pathname,
+                path: ((parser.pathname.charAt(0) !== '/') ? '/' : '') +
+                    decodeURIComponent(parser.pathname),
                 queryParams: extractQueryParams(parser.search)
             };
         };
@@ -241,7 +249,7 @@
             return /^\??(.*)$/.exec(search)[1].split('&').reduce(function (result, arg) {
                 arg = /^(.+)=(.*)$/.exec(arg);
                 if (arg) {
-                    result[arg[1]] = arg[2];
+                    result[decodeURIComponent(arg[1])] = decodeURIComponent(arg[2]);
                 }
                 return result;
             }, {});
@@ -249,39 +257,14 @@
     }
 
     /**
-     * URI encode every byte. UriEncode() must enforce the following rules:
-     * URI encode every byte except the unreserved characters: 'A'-'Z', 'a'-'z', '0'-'9', '-', '.', '_', and '~'.
-     * The space character is a reserved character and must be encoded as "%20" (and not as "+").
-     * Each URI encoded byte is formed by a '%' and the two-digit hexadecimal value of the byte.
-     * Letters in the hexadecimal value must be uppercase, for example "%1A".
-     * Encode the forward slash character, '/', everywhere except in the object key name. For example, if the object key name is photos/Jan/sample.jpg, the forward slash in the key name is not encoded.
-     * Reference: http://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html
+     * URI encode according to S3 requirements.
+     * See: http://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html
+     * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
      */
-    function uriEncode(input, encodeSlash) {
-        const result = [];
-        for (let i = 0; i < input.length; i++) {
-            const ch = input.charAt(i);
-            if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch === '_' || ch === '-' || ch === '~' || ch === '.') {
-                result.push(ch);
-            } else if (ch === '/') {
-                result.push(encodeSlash ? "%2F" : ch);
-            } else {
-                result.push(toHexUTF8(ch));
-            }
-        }
-        return result.join("");
-    }
-
-    const utf8 = require('utf8');
-
-    function toHexUTF8(ch) {
-        const utf8Sequence = utf8.encode(ch);
-        const encodedChar = [];
-        for (let i = 0; i < utf8Sequence.length; i++) {
-            encodedChar.push("%");
-            encodedChar.push(utf8Sequence[i].charCodeAt(0).toString(16).toUpperCase());
-        }
-        return encodedChar.join("");
+    function uriEncode(input) {
+        return encodeURIComponent(input).replace(/[!'()*]/g, function(c) {
+            return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+        });
     }
 
     /**

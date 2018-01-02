@@ -20,13 +20,19 @@
   },
   "homepage": "https://github.com/danieljoos/aws-sign-web#readme",
   "main": "aws-sign-web.js",
+  "scripts": {
+    "test": "node_modules/.bin/mocha"
+  },
   "devDependencies": {
     "gulp": "^3.9.1",
     "gulp-jscs": "^3.0.2",
-    "gulp-jshint": "^2.0.1",
+    "gulp-jshint": "^2.0.4",
     "gulp-load-plugins": "^1.2.0",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.5.3"
+    "gulp-uglify": "^1.5.3",
+    "http-string-parser": "0.0.6",
+    "jsdom": "^11.3.0",
+    "mocha": "^4.0.1"
   },
   "dependencies": {
     "crypto-js": "^3.1.6",
